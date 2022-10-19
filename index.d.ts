@@ -738,6 +738,8 @@ declare namespace WAWebJS {
         getContact: () => Promise<Contact>,
         /** Returns the Contacts mentioned in this message */
         getMentions: () => Promise<Contact[]>,
+        //retorna a mensagem com base no id da mesma
+        getMessageById(messageId: string): Promise<Message>
         /** Returns the quoted message, if any */
         getQuotedMessage: () => Promise<Message>,
         /** 

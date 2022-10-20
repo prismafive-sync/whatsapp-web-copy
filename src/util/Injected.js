@@ -228,9 +228,9 @@ exports.LoadUtils = () => {
         delete options.extraOptions;
 
         const ephemeralSettings = {
-            ephemeralDuration: undefined,
-            ephemeralSettingTimestamp: undefined,
-            disappearingModeInitiator: undefined,
+            ephemeralDuration: chat.hasOwnProperty('isEphemeralSettingOn') && chat.isEphemeralSettingOn() ? chat.getEphemeralSetting() : undefined,
+            ephemeralSettingTimestamp: chat.hasOwnProperty('getEphemeralSettingTimestamp') ? (chat.getEphemeralSettingTimestamp() || undefined) : undefined,
+            disappearingModeInitiator: chat.hasOwnProperty('getDisappearingModeInitiator') ? (chat.getDisappearingModeInitiator() || undefined) : undefined,
         };
 
         const message = {

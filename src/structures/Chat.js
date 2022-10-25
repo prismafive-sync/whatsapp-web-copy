@@ -173,6 +173,7 @@ class Chat extends Base {
      * @param {Object} searchOptions Options for searching messages. Right now only limit and fromMe is supported.
      * @param {Number} [searchOptions.limit] The amount of messages to return. If no limit is specified, the available messages will be returned. Note that the actual number of returned messages may be smaller if there aren't enough messages in the conversation. Set this to Infinity to load all messages.
      * @param {Boolean} [searchOptions.fromMe] Return only messages from the bot number or vise versa. To get all messages, leave the option undefined.
+     * @param {Number} [searchOptions.after]
      * @returns {Promise<Array<Message>>}
      */
     async fetchMessages(searchOptions) {
@@ -210,6 +211,47 @@ class Chat extends Base {
         return messages.map(m => new Message(this.client, m));
     }
 
+    
+    async fetchMessagesCustom(chat, searchOptions) {
+        let { limit, after } = searchOptions || {}
+      
+        if (after < 1) after = null
+        if (!limit) limit = after ? limit : 50
+        if (after) {
+          const date = new Date(after * 1000)
+          if (date instanceof Date === false || isNaN(date.valueOf())) after = null
+        }
+      
+        let messages = await chat.client.pupPage.evaluate(
+          async (chatId, limit, after) => {
+            // dont include notification messages... 
+            // and if has a valid timestamp, add it to filter too
+            const msgFilter = (m) => !m.isNotification && (after ? m.t >= after : true)
+
+            const chat = window.Store.Chat.get(chatId)
+            let msgs = chat.msgs.getModelsArray().filter(msgFilter)
+      
+            let filteredMessages = []
+            do {
+              const loadedMessages = await window.Store.ConversationMsgs.loadEarlierMsgs(chat)
+              if (!loadedMessages) break
+      
+              filteredMessages = loadedMessages.filter(msgFilter)
+              msgs = [...msgs, ...filteredMessages]
+      
+              if (limit > 0 && msgs.length >= limit) break
+            } while (filteredMessages.length > 0)
+      
+            msgs.sort((a, b) => (a.t > b.t ? 1 : -1))
+            if (limit > 0 && msgs.length > limit)
+              msgs = msgs.splice(msgs.length - limit)
+            return msgs.map((m) => window.WWebJS.getMessageModel(m))
+          }, 
+        chat.id._serialized, limit, after)
+      
+        return messages.map((m) => new Message(this.client, m))
+      }
+	  
     /**
      * Simulate typing in chat. This will last for 25 seconds.
      */

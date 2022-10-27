@@ -38,7 +38,7 @@ const updateVersion = async (oldVersion, newVersion) => {
 
     if(currentVersion !== version) {
         console.log('Updating files...');
-        await updateVersion(currentVersion, version);
+       // await updateVersion(currentVersion, version);
         console.log('Updated!');
     } else {
         console.log('No changes.');

@@ -436,7 +436,7 @@ class Message extends Base {
         await this.client.pupPage.evaluate((msgId, everyone) => {
             let msg = window.Store.Msg.get(msgId);
 
-            if (everyone && msg._canRevoke()) {
+            if (everyone) {
                 return window.Store.Cmd.sendRevokeMsgs(msg.chat, [msg], { type: msg.id.fromMe ? 'Sender' : 'Admin' });
             }
 
